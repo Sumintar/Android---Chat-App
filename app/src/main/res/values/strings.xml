@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TeacH Chat App</string>
+    <string name="btnSend">Send</string>
+    <string name="btnNickname">Enter</string>
+</resources>
