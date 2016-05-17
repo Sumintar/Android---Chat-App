@@ -34,6 +34,8 @@ public class PopOutNickname extends AppCompatActivity {
                 if(!etNickname.getText().toString().equals("")){
                     nickname = SetNickname(etNickname.getText().toString());
                     Toast.makeText(PopOutNickname.this, nickname + " is saved as nickname", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(PopOutNickname.this, MainActivity.class);
+                    startActivity(intent);
                 }
                 else
                     Toast.makeText(PopOutNickname.this, "You have to type your nickname", Toast.LENGTH_SHORT).show();
