@@ -14,8 +14,7 @@ public class Person {
         this.message = message;
     }
 
-
-
+    
     public String getName() {
         return name;
     }
