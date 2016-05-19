@@ -23,7 +23,6 @@ public class CustomAdapter extends ArrayAdapter<Messages> {
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater layoutInflater = LayoutInflater.from(getContext());
         View customView = layoutInflater.inflate(R.layout.custom_row, parent, false);
-        Log.i("teach", "customadapter_1");
         TextView etNicknameRow = (TextView)customView.findViewById(R.id.etNicknameRow);
         TextView etMessageRow = (TextView)customView.findViewById(R.id.etMessageRow);
         TextView etTimestampRow = (TextView)customView.findViewById(R.id.etTimestampRow);
@@ -36,9 +35,9 @@ public class CustomAdapter extends ArrayAdapter<Messages> {
             etTimestampRow.setText(singleMessage.getTimestamp());
         }
         else{
-            etNicknameRow.setText("Nickname");
-            etMessageRow.setText("Message");
-            etTimestampRow.setText("Timestamp");
+            etNicknameRow.setText("");
+            etMessageRow.setText("");
+            etTimestampRow.setText("");
         }
 
         return customView;

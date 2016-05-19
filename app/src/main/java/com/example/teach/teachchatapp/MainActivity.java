@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import cz.msebera.android.httpclient.HttpResponse;
@@ -42,7 +43,7 @@ import cz.msebera.android.httpclient.message.BasicNameValuePair;
 public class MainActivity extends AppCompatActivity {
 
     SharedPreferences sharedPref;
-    String data;
+    public String data;
     int lastID;
     private String nickname;
     private String message;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private final String siteUrlDownload = "http://banetest.d-logic.net/android_scripts/chat_app/download.php";
     EditText etMessage;
     //JSONObject jsonObj;
-    List<Messages> messagesArrayList;
+    ArrayList<Messages> messagesArrayList;
     ListView lvMessages;
     ListAdapter customAdapter;
     JSONArray jsonArray;
@@ -81,23 +82,10 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
 
-
-        JSONArray jsonArray = new JSONArray();
-        Log.i("teach", "2");
         new GetDataAsyncTask().execute(); // Load messages when app starts
-        JSONArrayToArrayList(jsonArray);
 
 
 
-        Log.i("teach", "1");
-       try {
-            customAdapter = new CustomAdapter(this, messagesArrayList);
-            lvMessages.setAdapter(customAdapter);
-            Log.i("teach", "after setAdapter");
-        }
-       catch (Exception e){
-           Toast.makeText(MainActivity.this, "SetAdapter error: " + e, Toast.LENGTH_SHORT).show();
-       }
 
         // Button for sending message
         btnSend.setOnClickListener(new View.OnClickListener() {
@@ -107,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
                     message = etMessage.getText().toString();
                     new PostDataAsyncTask().execute();
                     etMessage.setText("");
+                    new GetDataAsyncTask().execute();
                 } else {
                     Toast.makeText(MainActivity.this, "Enter a message first", Toast.LENGTH_SHORT).show();
                 }
@@ -130,12 +119,10 @@ public class MainActivity extends AppCompatActivity {
                     InputStream inputStream = response.getEntity().getContent();
 
                     if(inputStream != null) {
-                        data = convertInputStreamToString(inputStream);
-                        Log.i("teach", "Before creating JSON object. String of 'data' is: " + data);
+                        data = convertInputStreamToString(inputStream);Log.i("teach", "data inside GetDataAsynTask is: " + data);
                         jsonArray = new JSONArray(data);
-                        Log.i("teach", "After creating JSON object array" + jsonArray.toString());
-
-
+                        Log.i("teach", "jsong array to string: " + jsonArray.toString());
+                        JSONArrayToArrayList(jsonArray);
                     }
                     else {
                         data = "input Stream is null!";
@@ -160,13 +147,22 @@ public class MainActivity extends AppCompatActivity {
 
             if(result)
             {
-                Log.i("teach", "Json: " + jsonArray.toString());
+                Log.i("teach", "Data onPostExecute (true)is : " + data);
+                try {
+                    customAdapter = new CustomAdapter(MainActivity.this, messagesArrayList);
+                    lvMessages.setAdapter(customAdapter);
+                }
+                catch (Exception e){
+                    Toast.makeText(MainActivity.this, "SetAdapter error: " + e, Toast.LENGTH_SHORT).show();
+                }
             }
             else
             {
-                Log.i("teach", "result false");
+                Log.i("teach", "Data onPostExecute (false)is : " + data);
             }
         }
+
+
         // Convert Input Stream to String
         public String convertInputStreamToString(InputStream inputStream) throws IOException{
             BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
@@ -248,13 +244,13 @@ public class MainActivity extends AppCompatActivity {
         return jsonObject;
     }
 
-    private List<Messages> JSONArrayToArrayList(JSONArray jsonArray)
+    public  ArrayList<Messages> JSONArrayToArrayList(JSONArray jsonArray)
     {
-        messagesArrayList = new ArrayList<Messages>();
+        messagesArrayList = new ArrayList();
 
-
+        Log.i("teach", "Arralist in JSONArrayToArryList " + jsonArray.length());
         try {
-            Log.i("teach", "JSON to string" + jsonArray.toString());
+
             for(int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonData = jsonArray.getJSONObject(i);
 
@@ -262,11 +258,13 @@ public class MainActivity extends AppCompatActivity {
 
                 messages.setId(jsonData.getInt("id"));
                 messages.setNickname(jsonData.getString("nickname"));
-                messages.setMessage(jsonData.getString("nickname"));
+                messages.setMessage(jsonData.getString("message"));
                 messages.setTimestamp(jsonData.getString("timestamp"));
 
                 messagesArrayList.add(messages);
+
             }
+            Collections.reverse(messagesArrayList);
             //Find the last ID and put it in lastID, we use it later to check if there is new messages
             int value;
             int max = -1;
@@ -277,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             lastID = max;
-
+            Log.i("teach", "Array size: " + messagesArrayList.size());
             return messagesArrayList;
 
         } catch (JSONException e) {
