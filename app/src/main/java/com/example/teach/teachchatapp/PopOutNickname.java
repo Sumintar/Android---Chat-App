@@ -50,6 +50,7 @@ public class PopOutNickname extends AppCompatActivity {
     }
 
 
+    // Set activity window to 80% width and 50%, and it's transparent
     public void SetPopOut()
     {
         DisplayMetrics dm = new DisplayMetrics();
@@ -60,6 +61,7 @@ public class PopOutNickname extends AppCompatActivity {
 
         getWindow().setLayout((int)(width * 0.8), (int)(height * 0.5));
     }
+
 
     public String SetNickname(String nickname)
     {

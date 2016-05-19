@@ -8,24 +8,33 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
-    tools:context="com.example.teach.teachchatapp.MainActivity">
+    tools:context="com.example.teach.teachchatapp.MainActivity"
+    android:background="#508aa6"
+    >
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:id="@+id/listView"
+        android:id="@+id/lvMessages"
         android:layout_weight="1"
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll"
         />
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@android:color/white"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        />
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#eeeeee"
+        android:background="#93e3fb"
         android:gravity="bottom"
+
         >
 
         <EditText
@@ -39,6 +48,8 @@
             android:hint="Enter message"
             android:maxLines="4"
             android:minLines="1"
+            android:background="#F2DBDB"
+
 
             />
 
@@ -47,6 +58,7 @@
             android:layout_height="wrap_content"
             android:text="@string/btnSend"
             android:id="@+id/btnSend"
+            android:background="#33FF57"
             />
     </LinearLayout>
 </LinearLayout>

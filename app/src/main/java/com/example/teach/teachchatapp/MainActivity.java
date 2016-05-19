@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -24,11 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.client.ClientProtocolException;
@@ -36,7 +35,6 @@ import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
 import cz.msebera.android.httpclient.client.methods.HttpGet;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
 import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
@@ -50,10 +48,14 @@ public class MainActivity extends AppCompatActivity {
     private String message;
     private Button btnSend;
     private final String siteUrlUpload = "http://banetest.d-logic.net/android_scripts/chat_app/upload.php";
-    private String siteUrl = "http://banetest.d-logic.net/android_scripts/chat_app/";
+    //private String siteUrl = "http://banetest.d-logic.net/android_scripts/chat_app/";
     private final String siteUrlDownload = "http://banetest.d-logic.net/android_scripts/chat_app/download.php";
     EditText etMessage;
-    JSONObject jsonObj;
+    //JSONObject jsonObj;
+    List<Messages> messagesArrayList;
+    ListView lvMessages;
+    ListAdapter customAdapter;
+    JSONArray jsonArray;
 
 
     @Override
@@ -64,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
         sharedPref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String nicknameCheck = sharedPref.getString("nickname", null);
 
+        lvMessages = (ListView)findViewById(R.id.lvMessages);
+        btnSend = (Button) findViewById(R.id.btnSend);
+        etMessage = (EditText) findViewById(R.id.etMessage);
+        nickname = getNickname();
+
+
+
+        // If nickname didn't set (app running for the first time), go to choose nickname pop out activity
         if (nicknameCheck != null) {
             nickname = getNickname();
         } else {
@@ -72,12 +82,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        btnSend = (Button) findViewById(R.id.btnSend);
-        etMessage = (EditText) findViewById(R.id.etMessage);
-        nickname = getNickname();
-        Log.i("teach", "asdf");
-        new GetDataAsyncTask().execute();
+        JSONArray jsonArray = new JSONArray();
+        Log.i("teach", "2");
+        new GetDataAsyncTask().execute(); // Load messages when app starts
+        JSONArrayToArrayList(jsonArray);
 
+
+
+        Log.i("teach", "1");
+       try {
+            customAdapter = new CustomAdapter(this, messagesArrayList);
+            lvMessages.setAdapter(customAdapter);
+            Log.i("teach", "after setAdapter");
+        }
+       catch (Exception e){
+           Toast.makeText(MainActivity.this, "SetAdapter error: " + e, Toast.LENGTH_SHORT).show();
+       }
+
+        // Button for sending message
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    // Get messages from database via PHP script
     public class GetDataAsyncTask extends AsyncTask<String, Void, Boolean>{
 
 
@@ -109,8 +131,10 @@ public class MainActivity extends AppCompatActivity {
 
                     if(inputStream != null) {
                         data = convertInputStreamToString(inputStream);
+                        Log.i("teach", "Before creating JSON object. String of 'data' is: " + data);
+                        jsonArray = new JSONArray(data);
+                        Log.i("teach", "After creating JSON object array" + jsonArray.toString());
 
-                        jsonObj = new JSONObject(data);
 
                     }
                     else {
@@ -136,14 +160,14 @@ public class MainActivity extends AppCompatActivity {
 
             if(result)
             {
-
+                Log.i("teach", "Json: " + jsonArray.toString());
             }
             else
             {
-
+                Log.i("teach", "result false");
             }
         }
-
+        // Convert Input Stream to String
         public String convertInputStreamToString(InputStream inputStream) throws IOException{
             BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
             String line = "";
@@ -158,10 +182,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
-
+        // Send JSON to PHP script which upload message to a database
         public class PostDataAsyncTask extends AsyncTask<String, Void, Boolean> {
             @Override
             protected Boolean doInBackground(String... params) {
@@ -203,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-
+    //Get user nickname from savedPreferances
     private String getNickname()
     {
         String nickname = sharedPref.getString("nickname", "");
@@ -212,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
+    //Convert nickname and message from the phone to JSON object
     private JSONObject getMsgToJson(String nickname, String message)
     {
         JSONObject jsonObject = new JSONObject();
@@ -227,14 +248,13 @@ public class MainActivity extends AppCompatActivity {
         return jsonObject;
     }
 
-    private List<Messages> JSONArrayToArrayList()
+    private List<Messages> JSONArrayToArrayList(JSONArray jsonArray)
     {
-        List<Messages> messagesArrayList = new ArrayList<Messages>();
+        messagesArrayList = new ArrayList<Messages>();
 
-        String msg = "message";
+
         try {
-            JSONArray jsonArray = new JSONArray(jsonObj);
-
+            Log.i("teach", "JSON to string" + jsonArray.toString());
             for(int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonData = jsonArray.getJSONObject(i);
 
@@ -264,6 +284,5 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
-
     }
 }
