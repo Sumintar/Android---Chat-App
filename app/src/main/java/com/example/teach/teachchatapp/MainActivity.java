@@ -45,13 +45,14 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPref;
     public String data;
     int lastID;
-    private String nickname;
-    private String message;
-    private Button btnSend;
+    private String nickname, message;
     private final String siteUrlUpload = "http://banetest.d-logic.net/android_scripts/chat_app/upload.php";
     //private String siteUrl = "http://banetest.d-logic.net/android_scripts/chat_app/";
     private final String siteUrlDownload = "http://banetest.d-logic.net/android_scripts/chat_app/download.php";
+
+    private Button btnSend;
     EditText etMessage;
+
     //JSONObject jsonObj;
     ArrayList<Messages> messagesArrayList;
     ListView lvMessages;
@@ -95,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                     message = etMessage.getText().toString();
                     new PostDataAsyncTask().execute();
                     etMessage.setText("");
-                    new GetDataAsyncTask().execute();
+
                 } else {
                     Toast.makeText(MainActivity.this, "Enter a message first", Toast.LENGTH_SHORT).show();
                 }
@@ -119,9 +120,8 @@ public class MainActivity extends AppCompatActivity {
                     InputStream inputStream = response.getEntity().getContent();
 
                     if(inputStream != null) {
-                        data = convertInputStreamToString(inputStream);Log.i("teach", "data inside GetDataAsynTask is: " + data);
+                        data = convertInputStreamToString(inputStream);
                         jsonArray = new JSONArray(data);
-                        Log.i("teach", "jsong array to string: " + jsonArray.toString());
                         JSONArrayToArrayList(jsonArray);
                     }
                     else {
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
             if(result)
             {
-                Log.i("teach", "Data onPostExecute (true)is : " + data);
+
                 try {
                     customAdapter = new CustomAdapter(MainActivity.this, messagesArrayList);
                     lvMessages.setAdapter(customAdapter);
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else
             {
-                Log.i("teach", "Data onPostExecute (false)is : " + data);
+
             }
         }
 
@@ -213,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (result) {
                     Toast.makeText(MainActivity.this, "Message sent", Toast.LENGTH_SHORT).show();
+                    new GetDataAsyncTask().execute();
                 } else {
                     Toast.makeText(MainActivity.this, "Message is NOT sent", Toast.LENGTH_SHORT).show();
                 }
@@ -248,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
     {
         messagesArrayList = new ArrayList();
 
-        Log.i("teach", "Arralist in JSONArrayToArryList " + jsonArray.length());
+
         try {
 
             for(int i = 0; i < jsonArray.length(); i++) {
@@ -275,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             lastID = max;
-            Log.i("teach", "Array size: " + messagesArrayList.size());
+
             return messagesArrayList;
 
         } catch (JSONException e) {
