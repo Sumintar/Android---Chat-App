@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
     private Button btnSend;
     EditText etMessage;
 
-    //JSONObject jsonObj;
     ArrayList<Messages> messagesArrayList;
     ListView lvMessages;
     ListAdapter customAdapter;

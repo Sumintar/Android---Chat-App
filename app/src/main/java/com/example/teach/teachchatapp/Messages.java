@@ -1,6 +1,5 @@
 package com.example.teach.teachchatapp;
 
-import java.util.Date;
 
 /**
  * Created by TeacH on 5/18/2016.
