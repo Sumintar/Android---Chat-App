@@ -1,6 +1,8 @@
 package com.example.teach.teachchatapp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -17,7 +19,13 @@ import java.util.List;
 public class CustomAdapter extends ArrayAdapter<Messages> {
     public CustomAdapter(Context context, List<Messages> messages) {
         super(context, R.layout.custom_row, messages);
+
+
     }
+
+
+
+
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -26,6 +34,8 @@ public class CustomAdapter extends ArrayAdapter<Messages> {
         TextView etNicknameRow = (TextView)customView.findViewById(R.id.etNicknameRow);
         TextView etMessageRow = (TextView)customView.findViewById(R.id.etMessageRow);
         TextView etTimestampRow = (TextView)customView.findViewById(R.id.etTimestampRow);
+
+
 
         Messages singleMessage = getItem(position);
 
@@ -39,6 +49,14 @@ public class CustomAdapter extends ArrayAdapter<Messages> {
             etMessageRow.setText("");
             etTimestampRow.setText("");
         }
+
+        if(Messages.getUserNickname().equals(singleMessage.getNickname())){
+            etNicknameRow.setTextColor(Color.GREEN);
+        }
+        else {
+            etNicknameRow.setTextColor(Color.RED);
+        }
+
 
         return customView;
     }

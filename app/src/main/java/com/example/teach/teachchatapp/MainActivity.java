@@ -262,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
                 messages.setMessage(jsonData.getString("message"));
                 messages.setTimestamp(jsonData.getString("timestamp"));
 
+
                 messagesArrayList.add(messages);
 
             }
@@ -276,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             lastID = max;
-
+            Messages.setUserNickname(getNickname());
             return messagesArrayList;
 
         } catch (JSONException e) {

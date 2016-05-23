@@ -11,9 +11,18 @@ public class Messages {
     private String nickname;
     private String message;
     private String timestamp;
+    private static String userNickname;
 
 
     public Messages(){}
+
+    public static String getUserNickname() {
+        return userNickname;
+    }
+
+    public static void setUserNickname(String userNickname) {
+        Messages.userNickname = userNickname;
+    }
 
     public int getId() {
         return id;
