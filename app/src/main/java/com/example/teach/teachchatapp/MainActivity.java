@@ -1,9 +1,13 @@
 package com.example.teach.teachchatapp;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,6 +32,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
@@ -49,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private final String siteUrlUpload = "http://banetest.d-logic.net/android_scripts/chat_app/upload.php";
     //private String siteUrl = "http://banetest.d-logic.net/android_scripts/chat_app/";
     private final String siteUrlDownload = "http://banetest.d-logic.net/android_scripts/chat_app/download.php";
+    private final int appRefresh = 1000;
 
     private Button btnSend;
     EditText etMessage;
@@ -58,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
     ListAdapter customAdapter;
     JSONArray jsonArray;
 
+    Handler handler;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,24 +76,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         sharedPref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        //String nicknameCheck = sharedPref.getString("nickname", null);
         String nicknameCheck = sharedPref.getString("nickname", null);
 
         lvMessages = (ListView)findViewById(R.id.lvMessages);
         btnSend = (Button) findViewById(R.id.btnSend);
         etMessage = (EditText) findViewById(R.id.etMessage);
-        nickname = getNickname();
+
+
+        nickname = SharedPref.getNickname(getApplicationContext());
+
+        refreshApplication();
 
 
 
+        Log.i("teach", "on create()" + nickname);
         // If nickname didn't set (app running for the first time), go to choose nickname pop out activity
-        if (nicknameCheck != null) {
-            nickname = getNickname();
+        if (nickname != null & !nickname.equals("nickname")) {
+            nickname = SharedPref.getNickname(getApplicationContext());
         } else {
+            Log.i("teach", "nickname is: " + nickname);
+            Log.i("teach", "nickname from SharedPref is: " + SharedPref.getNickname(this));
             Intent intent = new Intent(this, PopOutNickname.class);
             startActivity(intent);
         }
 
-        new GetDataAsyncTask().execute(); // Load messages when app starts
+        new GetDataAsynTask(this, data, siteUrlDownload, lvMessages).execute(); // Load messages when app starts
 
 
 
@@ -101,78 +120,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    // Get messages from database via PHP script
-    public class GetDataAsyncTask extends AsyncTask<String, Void, Boolean>{
-
-
-        @Override
-        protected Boolean doInBackground(String... strings) {
-            {
-                try {
-                    //HttpClient client = new DefaultHttpClient();
-                    HttpClient client = HttpClientBuilder.create().build();
-                    HttpGet httpGet = new HttpGet(siteUrlDownload);
-                    HttpResponse response = client.execute(httpGet);
-
-                    InputStream inputStream = response.getEntity().getContent();
-
-                    if(inputStream != null) {
-                        data = convertInputStreamToString(inputStream);
-                        jsonArray = new JSONArray(data);
-                        JSONArrayToArrayList(jsonArray);
-                    }
-                    else {
-                        data = "input Stream is null!";
-                    }
-
-                    return true;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    data = "Error: " + e;
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return false;
-            }
-        }
-
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-
-            if(result)
-            {
-
-                try {
-                    customAdapter = new CustomAdapter(MainActivity.this, messagesArrayList);
-                    lvMessages.setAdapter(customAdapter);
-                }
-                catch (Exception e){
-                    Toast.makeText(MainActivity.this, "SetAdapter error: " + e, Toast.LENGTH_SHORT).show();
-                }
-            }
-            else
-            {
-
-            }
-        }
-
-
-        // Convert Input Stream to String
-        public String convertInputStreamToString(InputStream inputStream) throws IOException{
-            BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
-            String line = "";
-            String result = "";
-            while((line = bufferedReader.readLine()) != null)
-                result += line;
-
-            inputStream.close();
-            return result;
-        }
     }
 
 
@@ -212,20 +159,13 @@ public class MainActivity extends AppCompatActivity {
 
                 if (result) {
                     Toast.makeText(MainActivity.this, "Message sent", Toast.LENGTH_SHORT).show();
-                    new GetDataAsyncTask().execute();
+                    new GetDataAsynTask(getApplication(), data, siteUrlDownload, lvMessages).execute();
                 } else {
                     Toast.makeText(MainActivity.this, "Message is NOT sent", Toast.LENGTH_SHORT).show();
                 }
             }
 
         }
-
-    //Get user nickname from savedPreferances
-    private String getNickname()
-    {
-        String nickname = sharedPref.getString("nickname", "");
-        return nickname;
-    }
 
 
 
@@ -244,44 +184,19 @@ public class MainActivity extends AppCompatActivity {
         return jsonObject;
     }
 
-    public  ArrayList<Messages> JSONArrayToArrayList(JSONArray jsonArray)
-    {
-        messagesArrayList = new ArrayList();
 
-
-        try {
-
-            for(int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonData = jsonArray.getJSONObject(i);
-
-                Messages messages = new Messages();
-
-                messages.setId(jsonData.getInt("id"));
-                messages.setNickname(jsonData.getString("nickname"));
-                messages.setMessage(jsonData.getString("message"));
-                messages.setTimestamp(jsonData.getString("timestamp"));
-
-
-                messagesArrayList.add(messages);
-
-            }
-            Collections.reverse(messagesArrayList);
-            //Find the last ID and put it in lastID, we use it later to check if there is new messages
-            int value;
-            int max = -1;
-            for(int i = 0; i < messagesArrayList.size(); i++){
-                value = messagesArrayList.get(i).getId();
-                if(max < value){
-                    max = value;
-                }
-            }
-            lastID = max;
-            Messages.setUserNickname(getNickname());
-            return messagesArrayList;
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public void refreshApplication() {
+        handler = new android.os.Handler();
+        handler.postDelayed(mRunnable, 5000);
     }
+
+    private Runnable mRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            new GetDataAsynTask(getApplication(), data, siteUrlDownload, lvMessages).execute();
+            handler.postDelayed(mRunnable, appRefresh);
+        }
+    };
+
 }

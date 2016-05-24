@@ -17,6 +17,12 @@
         </activity>
         <activity android:name=".PopOutNickname" android:theme="@style/AppTheme.PopOutTheme">
         </activity>
+
+        <service android:name=".MyService"
+            android:exported="false"
+            >
+        </service>
+
     </application>
 
 </manifest>

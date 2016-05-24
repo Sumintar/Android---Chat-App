@@ -32,8 +32,11 @@ public class PopOutNickname extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(!etNickname.getText().toString().equals("")){
-                    nickname = SetNickname(etNickname.getText().toString());
+                    SharedPref.setNickname(getApplicationContext(), etNickname.getText().toString());
+
+                    nickname = SharedPref.getNickname(getApplicationContext());
                     Toast.makeText(PopOutNickname.this, nickname + " is saved as nickname", Toast.LENGTH_SHORT).show();
+
                     Intent intent = new Intent(PopOutNickname.this, MainActivity.class);
                     startActivity(intent);
                 }
